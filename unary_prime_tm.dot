@@ -1,0 +1,139 @@
+digraph UnaryPrimeChecker {
+    # --- Global Graph Settings ---
+    rankdir=LR;
+    node [shape = circle, fontname = "Helvetica"];
+    edge [fontname = "Helvetica", fontsize = 10];
+    
+    # --- Terminals ---
+    start [shape = plaintext, label = "Start"];
+    HALT_PRIME [shape = doublecircle, label = "HALT\n(PRIME)", color = green, style = filled, fillcolor = "#e6ffe6"];
+    HALT_NOT_PRIME [shape = doublecircle, label = "HALT\n(NOT PRIME)", color = red, style = filled, fillcolor = "#ffe6e6"];
+
+    # ==========================================
+    # PHASE 1: INITIALIZATION (n -> n # m)
+    # ==========================================
+    subgraph cluster_init {
+        label = "Phase 1: Initialization";
+        style = dashed;
+        color = gray;
+
+        start -> q0_init;
+        
+        # Mark first digit ($)
+        q0_init -> q1_seek_end [label = "1 / $, R"];
+        
+        # Find end of input
+        q1_seek_end -> q1_seek_end [label = "1 / 1, R"];
+        q1_seek_end -> q2_write_sep [label = "_ / #, R"];
+
+        # Create m (copy n)
+        q2_write_sep -> q3_rewind [label = "_ / 1, L"];
+        
+        # Rewind to start
+        q3_rewind -> q3_rewind [label = "1 / 1, L\n# / #, L"];
+        q3_rewind -> q4_copy_loop [label = "$ / 1, R"];
+
+        # Copy Loop
+        q4_copy_loop -> q5_carry [label = "1 / $, R"];     # Found digit to copy
+        q4_copy_loop -> q7_sub_prep [label = "# / #, R"];  # Done copying
+
+        # Carry digit to m
+        q5_carry -> q5_carry [label = "1 / 1, R\n# / #, R"];
+        q5_carry -> q6_return [label = "_ / 1, L"];
+        
+        # Return to n
+        q6_return -> q6_return [label = "1 / 1, L\n# / #, L"];
+        q6_return -> q4_copy_loop [label = "$ / 1, R"];
+
+        # Subtract 1 from m (n-1) and place %
+        q7_sub_prep -> q7_sub_prep [label = "1 / 1, R"];
+        q7_sub_prep -> q8_sub_one [label = "_ / _, L"];
+        q8_sub_one -> q9_seek_sep [label = "1 / _, L"]; # Actual subtraction
+        
+        q9_seek_sep -> q9_seek_sep [label = "1 / 1, L"];
+        q9_seek_sep -> q10_place_pct [label = "# / #, R"];
+        
+        q10_place_pct -> q11_reset_start [label = "1 / %, L"];
+        
+        q11_reset_start -> q11_reset_start [label = "1 / 1, L\n# / #, L"];
+        q11_reset_start -> q12_fix_dollar [label = "_ / _, R"];
+        q12_fix_dollar -> q13_mod_entry [label = "1 / $, N"];
+    }
+
+    # ==========================================
+    # PHASE 2: MODULO (n % m)
+    # ==========================================
+    subgraph cluster_mod {
+        label = "Phase 2: Modulo Loop";
+        style = dashed;
+        color = blue;
+
+        # Entry: Unmark $ to start loop
+        q13_mod_entry -> q14_div_loop [label = "$ / 1, R"];
+
+        # Main Div Loop: Iterating over n
+        q14_div_loop -> q15_move_pct [label = "1 / $, R"]; # Mark current n digit
+        q14_div_loop -> q20_check_rem [label = "# / #, R"]; # End of n -> Check Remainder
+
+        # Move Divisor (%) Logic
+        q15_move_pct -> q15_move_pct [label = "1 / 1, R\n# / #, R"];
+        q15_move_pct -> q16_shift_check [label = "% / 1, R"]; # Pick up %
+
+        # Check if we hit end of m
+        q16_shift_check -> q17_wrap_pct [label = "_ / _, L"]; # Hit end -> Wrap around
+        q16_shift_check -> q19_return_n [label = "1 / %, L"]; # No hit -> Place % here
+
+        # Wrap % back to start of m
+        q17_wrap_pct -> q17_wrap_pct [label = "1 / 1, L"];
+        q17_wrap_pct -> q18_place_pct_start [label = "# / #, R"];
+        q18_place_pct_start -> q19_return_n [label = "1 / %, L"];
+
+        # Return to n ($)
+        q19_return_n -> q19_return_n [label = "1 / 1, L\n% / %, L\n# / #, L"];
+        q19_return_n -> q14_div_loop [label = "$ / 1, R"]; # Unmark $ and continue
+    }
+
+    # ==========================================
+    # PHASE 3: CHECK & SUBTRACT
+    # ==========================================
+    subgraph cluster_check {
+        label = "Phase 3: Check & Subtract";
+        style = dashed;
+        color = red;
+
+        # Check Remainder
+        q20_check_rem -> q20_check_rem [label = "1 / 1, R"];
+        q20_check_rem -> q21_verify_rem [label = "% / 1, R"];
+        
+        # Decision: Divisible?
+        q21_verify_rem -> HALT_NOT_PRIME [label = "_ / _, L"]; # Remainder 0 -> Divisible
+        q21_verify_rem -> q22_cleanup [label = "1 / 1, L"];   # Remainder > 0 -> Not Divisible
+
+        # Cleanup: Reset m and n for next pass
+        q22_cleanup -> q22_cleanup [label = "1 / 1, L"];
+        q22_cleanup -> q23_reset_pct [label = "# / #, R"];
+        q23_reset_pct -> q24_reset_n [label = "1 / %, L"]; # Put % back at start
+        
+        q24_reset_n -> q24_reset_n [label = "1 / 1, L\n# / #, L"];
+        q24_reset_n -> q25_fix_dol [label = "_ / _, R"];
+        q25_fix_dol -> q26_sub_seek [label = "1 / $, N"];
+
+        # Subtract 1 from m
+        q26_sub_seek -> q26_sub_seek [label = "1 / 1, R\n# / #, R\n% / %, R\n$ / $, R"];
+        q26_sub_seek -> q27_do_sub [label = "_ / _, L"];
+        q27_do_sub -> q28_check_size [label = "1 / _, L"];
+
+        # Check if m > 1
+        q28_check_size -> q28_check_size [label = "1 / 1, L"];
+        q28_check_size -> q29_inspect [label = "# / #, R"];
+        q29_inspect -> q30_verify_one [label = "% / %, R"];
+
+        # Final Decision
+        q30_verify_one -> q31_restart [label = "1 / 1, R"]; # Found a 1 -> m > 1 -> Continue
+        q30_verify_one -> HALT_PRIME [label = "_ / _, L"]; # No 1 found -> m <= 1 -> PRIME
+
+        # Restart loop
+        q31_restart -> q31_restart [label = "1 / 1, L\n% / %, L\n# / #, L"];
+        q31_restart -> q13_mod_entry [label = "$ / $, N"];
+    }
+}
