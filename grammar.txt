@@ -1,0 +1,76 @@
+S -> |- q_start G
+G -> 1 G
+G -> 1 -|
+q_start 1 -> 1 q_check1
+q_check1 1 -> 1 q_check2
+q_check2 1 -> 1 q_reset
+q_check2 -| -> -| HALT
+q -| -> q _ -|
+x q_reset 1 -> q_reset x 1
+q_reset |- -> |- q_init
+q_init 1 -> $ q_seek
+q_seek 1 -> 1 q_seek
+q_seek _ -> # q_prep
+x q_prep _ -> q_rewind x 1
+x q_rewind y -> q_rewind x y
+q_rewind $ -> 1 q_copy
+q_copy 1 -> $ q_carry
+q_copy # -> # q_fin_m
+q_carry y -> y q_carry
+x q_carry _ -> q_return x 1
+x q_return y -> q_return x y
+q_return $ -> 1 q_copy
+q_fin_m 1 -> 1 q_fin_m
+x q_fin_m _ -> q_sub x _
+x q_sub 1 -> q_sep x _
+x q_sep 1 -> q_sep x 1
+q_sep # -> # q_pct
+x q_pct 1 -> q_resetN x %
+x q_resetN y -> q_resetN x y
+q_resetN |- -> |- q_mod_entry
+q_mod_entry 1 -> $ q_mod
+q_mod $ -> 1 q_mod
+q_mod 1 -> $ q_move%
+q_mod # -> # q_check
+q_move% 1 -> 1 q_move%
+q_move% # -> # q_move%
+q_move% % -> 1 q_checkM
+x q_checkM _ -> q_wrap x _
+x q_checkM 1 -> q_retN x %
+x q_wrap 1 -> q_wrap x 1
+q_wrap # -> # q_reset%
+x q_reset% 1 -> q_retN x %
+x q_retN y -> q_retN x y
+q_retN $ -> 1 q_mod
+q_check % -> 1 q_verify
+q_check 1 -> 1 q_check
+x q_verify 1 -> q_clean x %
+x q_clean y -> q_clean x 1
+q_clean # -> # q_fix%
+x q_fix% 1 -> q_fixRet x %
+x q_fixRet y -> q_fixRet x y
+q_fixRet |- -> |- q_subEntry
+q_subEntry y -> y q_subEntry
+x q_subEntry _ -> q_doSub x _
+x q_doSub 1 -> q_chkSz x _
+x q_chkSz 1 -> q_chkSz x 1
+q_chkSz # -> # q_inspect
+q_inspect % -> % q_chk1
+q_chk1 1 -> 1 q_resetLoop
+x q_chk1 _ -> q_restore x _
+x q_resetLoop y -> q_resetLoop x y
+q_resetLoop $->$ q_mod_entry
+x q_restore y -> q_restore x y
+q_restore $ -> 1 q_seekSep
+q_seekSep 1 -> 1 q_seekSep
+q_seekSep # -> _ q_erase
+q_erase 1 -> _ q_erase
+q_erase % -> _ q_erase
+x q_erase _ -> q_done x _
+x q_done 1 -> q_done x 1
+q_done |- -> |- HALT
+HALT -> epsilon
+|- 1 -> 1 |-
+|- _ -> |-
+_ -| -> -|
+|- -| -> epsilon
