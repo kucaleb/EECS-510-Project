@@ -107,6 +107,16 @@ class Tape:
 
 class Automaton(Tape):
     def init_workspace(self):
+        # check if input is 11
+        self.transition("1", "1", "R")
+        if self.transition("_", "_", "L"):
+            return False
+        self.transition("1", "1", "R")
+        if self.transition("_", "_", "L"):
+            self.transition("1", "1", "L")
+            return True # 2 is prime
+        self.move_not_value("_", "L")
+        self.transition("_", "_", "R")
         self.transition("1", "$", "R")
         self.move_not_value("_", "R")
         self.transition("_", "#", "R")
@@ -166,7 +176,34 @@ class Automaton(Tape):
             return False 
         else:
             return True 
+        
+    def cleanup_accept(self):
+        self.move_not_value("$", "L")
+        self.transition("$", "1", "R")
+        self.move_not_value("#", "R")
+        self.transition("#", "_", "R")
+        while self.transition("1", "_", "R"):
+            pass
+        while self.transition("%", "_", "R"):
+            pass
+        while self.transition("1", "_", "R"):
+            pass
+        self.move_not_value("1", "L")
+        self.move_not_value("_", "L")
+        self.transition("_", "_", "R")
 
+    def cleanup_deny(self):
+        self.move_not_value("_", "R")
+        self.transition("_", "_", "L")
+        while not self.transition("_", "_", "L"):
+            if self.transition("1", "_", "L"):
+                pass
+            elif self.transition("$", "_", "L"):
+                pass
+            elif self.transition("#", "_", "L"):
+                pass
+            elif self.transition("%", "_", "L"):
+                pass
 
 def accept(A: Automaton, s: str):    
     try:
@@ -176,19 +213,28 @@ def accept(A: Automaton, s: str):
         print(f"Error: {e}")
         return False
 
-    A.init_workspace()
+    a = A.init_workspace()
+    if a:
+        print("accept")
+        return True
+    elif a == False:
+        print("reject")
+        return False
     
     # Run the Prime Checker Logic
     while not A.mod():
         if A.check_and_subtract():
+            A.cleanup_accept()
             print("accept")
             A.close_log()
             return True       
     else:
+        A.cleanup_deny()
         print("reject")
         A.delete_log()
         return False
 
 if __name__ == "__main__":
     machine = Automaton()
-    accept(machine, "1"*97)
+    for i in range(1, 10):
+        accept(machine, "1"*i)
