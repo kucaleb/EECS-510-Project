@@ -1,76 +1,298 @@
-S -> |- q_start G
-G -> 1 G
-G -> 1 -|
-q_start 1 -> 1 q_check1
-q_check1 1 -> 1 q_check2
-q_check2 1 -> 1 q_reset
-q_check2 -| -> -| HALT
-q -| -> q _ -|
-x q_reset 1 -> q_reset x 1
-q_reset |- -> |- q_init
-q_init 1 -> $ q_seek
-q_seek 1 -> 1 q_seek
-q_seek _ -> # q_prep
-x q_prep _ -> q_rewind x 1
-x q_rewind y -> q_rewind x y
-q_rewind $ -> 1 q_copy
-q_copy 1 -> $ q_carry
-q_copy # -> # q_fin_m
-q_carry y -> y q_carry
-x q_carry _ -> q_return x 1
-x q_return y -> q_return x y
-q_return $ -> 1 q_copy
-q_fin_m 1 -> 1 q_fin_m
-x q_fin_m _ -> q_sub x _
-x q_sub 1 -> q_sep x _
-x q_sep 1 -> q_sep x 1
-q_sep # -> # q_pct
-x q_pct 1 -> q_resetN x %
-x q_resetN y -> q_resetN x y
-q_resetN |- -> |- q_mod_entry
-q_mod_entry 1 -> $ q_mod
-q_mod $ -> 1 q_mod
-q_mod 1 -> $ q_move%
-q_mod # -> # q_check
-q_move% 1 -> 1 q_move%
-q_move% # -> # q_move%
-q_move% % -> 1 q_checkM
-x q_checkM _ -> q_wrap x _
-x q_checkM 1 -> q_retN x %
-x q_wrap 1 -> q_wrap x 1
-q_wrap # -> # q_reset%
-x q_reset% 1 -> q_retN x %
-x q_retN y -> q_retN x y
-q_retN $ -> 1 q_mod
-q_check % -> 1 q_verify
-q_check 1 -> 1 q_check
-x q_verify 1 -> q_clean x %
-x q_clean y -> q_clean x 1
-q_clean # -> # q_fix%
-x q_fix% 1 -> q_fixRet x %
-x q_fixRet y -> q_fixRet x y
-q_fixRet |- -> |- q_subEntry
-q_subEntry y -> y q_subEntry
-x q_subEntry _ -> q_doSub x _
-x q_doSub 1 -> q_chkSz x _
-x q_chkSz 1 -> q_chkSz x 1
-q_chkSz # -> # q_inspect
-q_inspect % -> % q_chk1
-q_chk1 1 -> 1 q_resetLoop
-x q_chk1 _ -> q_restore x _
-x q_resetLoop y -> q_resetLoop x y
-q_resetLoop $->$ q_mod_entry
-x q_restore y -> q_restore x y
-q_restore $ -> 1 q_seekSep
-q_seekSep 1 -> 1 q_seekSep
-q_seekSep # -> _ q_erase
-q_erase 1 -> _ q_erase
-q_erase % -> _ q_erase
-x q_erase _ -> q_done x _
-x q_done 1 -> q_done x 1
-q_done |- -> |- HALT
-HALT -> epsilon
-|- 1 -> 1 |-
-|- _ -> |-
-_ -| -> -|
-|- -| -> epsilon
+# Unrestricted Grammar
+
+S → q_start 1 G
+G → 1 G
+G → _
+
+### Base Case Check:
+q_start 1 → 1 q_check_1
+q_check_1 1 → 1 q_check_2
+q_check_2 1 → 1 q_reset_head
+1 q_reset_head 1 → q_reset_head 1 1
+_ q_reset_head 1 → q_reset_head _ 1
+$ q_reset_head 1 → q_reset_head $ 1
+# q_reset_head 1 → q_reset_head # 1
+% q_reset_head 1 → q_reset_head % 1
+q_reset_head _ → _ q_init_start
+1  q_check_1 _ → REJECT 1 _
+$  q_check_1 _ → REJECT $ _
+#  q_check_1 _ → REJECT # _
+%  q_check_1 _ → REJECT % _
+_  q_check_1 _ → REJECT _ _
+1  q_check_2 _ → q_found_2 1 _
+$  q_check_2 _ → q_found_2 $ _
+#  q_check_2 _ → q_found_2 # _
+%  q_check_2 _ → q_found_2 % _
+_  q_check_2 _ → q_found_2 _ _
+1 q_found_2 1 → ACCEPT 1 1
+_ q_found_2 1 → ACCEPT _ 1
+$ q_found_2 1 → ACCEPT $ 1
+# q_found_2 1 → ACCEPT # 1
+% q_found_2 1 → ACCEPT % 1
+***
+### Setup Workspace
+q_init_start 1 → $ q_seek_end
+q_seek_end 1 → 1 q_seek_end
+q_seek_end _ → # q_prep_m
+1 q_prep_m _ → q_rewind 1 1
+_ q_prep_m _ → q_rewind _ 1
+$ q_prep_m _ → q_rewind $ 1
+# q_prep_m _ → q_rewind # 1
+% q_prep_m _ → q_rewind % 1
+1 q_rewind 1 → q_rewind 1 1
+_ q_rewind 1 → q_rewind _ 1
+$ q_rewind 1 → q_rewind $ 1
+# q_rewind 1 → q_rewind # 1
+% q_rewind 1 → q_rewind % 1
+1 q_rewind # → q_rewind 1 #
+_ q_rewind # → q_rewind _ #
+$ q_rewind # → q_rewind $ #
+# q_rewind # → q_rewind # #
+% q_rewind # → q_rewind % #
+q_rewind $ → 1 q_copy_loop
+q_copy_loop # → # q_seek_m_end
+q_seek_m_end 1 → 1 q_seek_m_end
+1  q_seek_m_end _ → q_sub_1 1 _
+$  q_seek_m_end _ → q_sub_1 $ _
+#  q_seek_m_end _ → q_sub_1 # _
+%  q_seek_m_end _ → q_sub_1 % _
+_  q_seek_m_end _ → q_sub_1 _ _
+1 q_sub_1 1 → q_find_sep 1 _
+_ q_sub_1 1 → q_find_sep _ _
+$ q_sub_1 1 → q_find_sep $ _
+# q_sub_1 1 → q_find_sep # _
+% q_sub_1 1 → q_find_sep % _
+1 q_find_sep 1 → q_find_sep 1 1
+_ q_find_sep 1 → q_find_sep _ 1
+$ q_find_sep 1 → q_find_sep $ 1
+# q_find_sep 1 → q_find_sep # 1
+% q_find_sep 1 → q_find_sep % 1
+q_find_sep # → # q_place_pct
+1 q_place_pct 1 → q_reset_n 1 %
+_ q_place_pct 1 → q_reset_n _ %
+$ q_place_pct 1 → q_reset_n $ %
+# q_place_pct 1 → q_reset_n # %
+% q_place_pct 1 → q_reset_n % %
+1 q_reset_n 1 → q_reset_n 1 1
+_ q_reset_n 1 → q_reset_n _ 1
+$ q_reset_n 1 → q_reset_n $ 1
+# q_reset_n 1 → q_reset_n # 1
+% q_reset_n 1 → q_reset_n % 1
+1 q_reset_n # → q_reset_n 1 #
+_ q_reset_n # → q_reset_n _ #
+$ q_reset_n # → q_reset_n $ #
+# q_reset_n # → q_reset_n # #
+% q_reset_n # → q_reset_n % #
+q_reset_n _ → _ q_mark_dol
+q_mark_dol 1 → $ q_mod_entry
+q_copy_loop 1 → $ q_carry
+q_carry 1 → 1 q_carry
+q_carry # → # q_carry
+1 q_carry _ → q_return 1 1
+_ q_carry _ → q_return _ 1
+$ q_carry _ → q_return $ 1
+# q_carry _ → q_return # 1
+% q_carry _ → q_return % 1
+1 q_return 1 → q_return 1 1
+_ q_return 1 → q_return _ 1
+$ q_return 1 → q_return $ 1
+# q_return 1 → q_return # 1
+% q_return 1 → q_return % 1
+1 q_return # → q_return 1 #
+_ q_return # → q_return _ #
+$ q_return # → q_return $ #
+# q_return # → q_return # #
+% q_return # → q_return % #
+***
+### Modulo Operation
+q_mod_loop 1 → $ q_move_pct
+q_move_pct 1 → 1 q_move_pct
+q_move_pct # → # q_move_pct
+q_move_pct % → 1 q_chk_m_end
+1  q_chk_m_end _ → q_wrap_pct 1 _
+$  q_chk_m_end _ → q_wrap_pct $ _
+#  q_chk_m_end _ → q_wrap_pct # _
+%  q_chk_m_end _ → q_wrap_pct % _
+_  q_chk_m_end _ → q_wrap_pct _ _
+1 q_wrap_pct 1 → q_wrap_pct 1 1
+_ q_wrap_pct 1 → q_wrap_pct _ 1
+$ q_wrap_pct 1 → q_wrap_pct $ 1
+# q_wrap_pct 1 → q_wrap_pct # 1
+% q_wrap_pct 1 → q_wrap_pct % 1
+q_wrap_pct # → # q_reset_pct
+1 q_reset_pct 1 → q_return_n 1 %
+_ q_reset_pct 1 → q_return_n _ %
+$ q_reset_pct 1 → q_return_n $ %
+# q_reset_pct 1 → q_return_n # %
+% q_reset_pct 1 → q_return_n % %
+1 q_return_n 1 → q_return_n 1 1
+_ q_return_n 1 → q_return_n _ 1
+$ q_return_n 1 → q_return_n $ 1
+# q_return_n 1 → q_return_n # 1
+% q_return_n 1 → q_return_n % 1
+1 q_return_n % → q_return_n 1 %
+_ q_return_n % → q_return_n _ %
+$ q_return_n % → q_return_n $ %
+# q_return_n % → q_return_n # %
+% q_return_n % → q_return_n % %
+1 q_return_n # → q_return_n 1 #
+_ q_return_n # → q_return_n _ #
+$ q_return_n # → q_return_n $ #
+# q_return_n # → q_return_n # #
+% q_return_n # → q_return_n % #
+1 q_chk_m_end 1 → q_return_n 1 %
+_ q_chk_m_end 1 → q_return_n _ %
+$ q_chk_m_end 1 → q_return_n $ %
+# q_chk_m_end 1 → q_return_n # %
+% q_chk_m_end 1 → q_return_n % %
+q_mod_loop # → # q_check_rem
+q_check_rem 1 → 1 q_check_rem
+q_check_rem % → 1 q_verify
+***
+### Check Remainder
+1  q_verify _ → q_deny_clean 1 _
+$  q_verify _ → q_deny_clean $ _
+#  q_verify _ → q_deny_clean # _
+%  q_verify _ → q_deny_clean % _
+_  q_verify _ → q_deny_clean _ _
+1  q_deny_clean _ → q_wipe_left 1 _
+$  q_deny_clean _ → q_wipe_left $ _
+#  q_deny_clean _ → q_wipe_left # _
+%  q_deny_clean _ → q_wipe_left % _
+_  q_deny_clean _ → q_wipe_left _ _
+1 q_verify 1 → q_clean_mod 1 %
+_ q_verify 1 → q_clean_mod _ %
+$ q_verify 1 → q_clean_mod $ %
+# q_verify 1 → q_clean_mod # %
+% q_verify 1 → q_clean_mod % %
+1 q_clean_mod 1 → q_clean_mod 1 1
+_ q_clean_mod 1 → q_clean_mod _ 1
+$ q_clean_mod 1 → q_clean_mod $ 1
+# q_clean_mod 1 → q_clean_mod # 1
+% q_clean_mod 1 → q_clean_mod % 1
+1 q_clean_mod % → q_clean_mod 1 %
+_ q_clean_mod % → q_clean_mod _ %
+$ q_clean_mod % → q_clean_mod $ %
+# q_clean_mod % → q_clean_mod # %
+% q_clean_mod % → q_clean_mod % %
+q_clean_mod # → # q_fix_pct
+1 q_fix_pct 1 → q_fix_return 1 %
+_ q_fix_pct 1 → q_fix_return _ %
+$ q_fix_pct 1 → q_fix_return $ %
+# q_fix_pct 1 → q_fix_return # %
+% q_fix_pct 1 → q_fix_return % %
+1 q_fix_return 1 → q_fix_return 1 1
+_ q_fix_return 1 → q_fix_return _ 1
+$ q_fix_return 1 → q_fix_return $ 1
+# q_fix_return 1 → q_fix_return # 1
+% q_fix_return 1 → q_fix_return % 1
+1 q_fix_return # → q_fix_return 1 #
+_ q_fix_return # → q_fix_return _ #
+$ q_fix_return # → q_fix_return $ #
+# q_fix_return # → q_fix_return # #
+% q_fix_return # → q_fix_return % #
+q_fix_return _ → _ q_fix_dol
+q_fix_dol 1 → $ q_sub_entry
+q_sub_entry 1 → 1 q_sub_entry
+q_sub_entry # → # q_sub_entry
+q_sub_entry % → % q_sub_entry
+q_sub_entry $ → $ q_sub_entry
+1  q_sub_entry _ → q_do_sub 1 _
+$  q_sub_entry _ → q_do_sub $ _
+#  q_sub_entry _ → q_do_sub # _
+%  q_sub_entry _ → q_do_sub % _
+_  q_sub_entry _ → q_do_sub _ _
+***
+### Subtract & Check Size
+1 q_do_sub 1 → q_chk_size 1 _
+_ q_do_sub 1 → q_chk_size _ _
+$ q_do_sub 1 → q_chk_size $ _
+# q_do_sub 1 → q_chk_size # _
+% q_do_sub 1 → q_chk_size % _
+1 q_chk_size 1 → q_chk_size 1 1
+_ q_chk_size 1 → q_chk_size _ 1
+$ q_chk_size 1 → q_chk_size $ 1
+# q_chk_size 1 → q_chk_size # 1
+% q_chk_size 1 → q_chk_size % 1
+q_chk_size # → # q_inspect
+q_inspect % → % q_chk_1
+1  q_chk_1 _ → q_accept_clean 1 _
+$  q_chk_1 _ → q_accept_clean $ _
+#  q_chk_1 _ → q_accept_clean # _
+%  q_chk_1 _ → q_accept_clean % _
+_  q_chk_1 _ → q_accept_clean _ _
+1 q_accept_clean 1 → q_accept_clean 1 1
+_ q_accept_clean 1 → q_accept_clean _ 1
+$ q_accept_clean 1 → q_accept_clean $ 1
+# q_accept_clean 1 → q_accept_clean # 1
+% q_accept_clean 1 → q_accept_clean % 1
+1 q_accept_clean % → q_accept_clean 1 %
+_ q_accept_clean % → q_accept_clean _ %
+$ q_accept_clean % → q_accept_clean $ %
+# q_accept_clean % → q_accept_clean # %
+% q_accept_clean % → q_accept_clean % %
+1 q_accept_clean # → q_accept_clean 1 #
+_ q_accept_clean # → q_accept_clean _ #
+$ q_accept_clean # → q_accept_clean $ #
+# q_accept_clean # → q_accept_clean # #
+% q_accept_clean # → q_accept_clean % #
+q_accept_clean $ → 1 q_seek_sep
+q_chk_1 1 → 1 q_reset_loop
+1 q_reset_loop 1 → q_reset_loop 1 1
+_ q_reset_loop 1 → q_reset_loop _ 1
+$ q_reset_loop 1 → q_reset_loop $ 1
+# q_reset_loop 1 → q_reset_loop # 1
+% q_reset_loop 1 → q_reset_loop % 1
+1 q_reset_loop % → q_reset_loop 1 %
+_ q_reset_loop % → q_reset_loop _ %
+$ q_reset_loop % → q_reset_loop $ %
+# q_reset_loop % → q_reset_loop # %
+% q_reset_loop % → q_reset_loop % %
+1 q_reset_loop # → q_reset_loop 1 #
+_ q_reset_loop # → q_reset_loop _ #
+$ q_reset_loop # → q_reset_loop $ #
+# q_reset_loop # → q_reset_loop # #
+% q_reset_loop # → q_reset_loop % #
+q_reset_loop $ → $ q_mod_entry
+***
+### Cleanup Phase
+q_seek_sep 1 → 1 q_seek_sep
+q_seek_sep # → _ q_erase_m
+q_erase_m 1 → _ q_erase_m
+q_erase_m % → _ q_erase_m
+1  q_erase_m _ → q_done_reset 1 _
+$  q_erase_m _ → q_done_reset $ _
+#  q_erase_m _ → q_done_reset # _
+%  q_erase_m _ → q_done_reset % _
+_  q_erase_m _ → q_done_reset _ _
+1 q_done_reset 1 → q_done_reset 1 1
+_ q_done_reset 1 → q_done_reset _ 1
+$ q_done_reset 1 → q_done_reset $ 1
+# q_done_reset 1 → q_done_reset # 1
+% q_done_reset 1 → q_done_reset % 1
+q_done_reset _ → _ ACCEPT
+1 q_wipe_left 1 → q_wipe_left 1 _
+_ q_wipe_left 1 → q_wipe_left _ _
+$ q_wipe_left 1 → q_wipe_left $ _
+# q_wipe_left 1 → q_wipe_left # _
+% q_wipe_left 1 → q_wipe_left % _
+1 q_wipe_left $ → q_wipe_left 1 _
+_ q_wipe_left $ → q_wipe_left _ _
+$ q_wipe_left $ → q_wipe_left $ _
+# q_wipe_left $ → q_wipe_left # _
+% q_wipe_left $ → q_wipe_left % _
+1 q_wipe_left # → q_wipe_left 1 _
+_ q_wipe_left # → q_wipe_left _ _
+$ q_wipe_left # → q_wipe_left $ _
+# q_wipe_left # → q_wipe_left # _
+% q_wipe_left # → q_wipe_left % _
+1 q_wipe_left % → q_wipe_left 1 _
+_ q_wipe_left % → q_wipe_left _ _
+$ q_wipe_left % → q_wipe_left $ _
+# q_wipe_left % → q_wipe_left # _
+% q_wipe_left % → q_wipe_left % _
+1  q_wipe_left _ → REJECT 1 _
+$  q_wipe_left _ → REJECT $ _
+#  q_wipe_left _ → REJECT # _
+%  q_wipe_left _ → REJECT % _
+_  q_wipe_left _ → REJECT _ _
