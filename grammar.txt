@@ -4,7 +4,7 @@ S → q_start 1 G
 G → 1 G
 G → _
 
-### Base Case Check:
+Base Case Check:
 q_start 1 → 1 q_check_1
 q_check_1 1 → 1 q_check_2
 q_check_2 1 → 1 q_reset_head
@@ -29,8 +29,8 @@ _ q_found_2 1 → ACCEPT _ 1
 $ q_found_2 1 → ACCEPT $ 1
 # q_found_2 1 → ACCEPT # 1
 % q_found_2 1 → ACCEPT % 1
-***
-### Setup Workspace
+---------------------------------------------
+Setup Workspace
 q_init_start 1 → $ q_seek_end
 q_seek_end 1 → 1 q_seek_end
 q_seek_end _ → # q_prep_m
@@ -103,8 +103,8 @@ _ q_return # → q_return _ #
 $ q_return # → q_return $ #
 # q_return # → q_return # #
 % q_return # → q_return % #
-***
-### Modulo Operation
+---------------------------------------------
+Modulo Operation
 q_mod_loop 1 → $ q_move_pct
 q_move_pct 1 → 1 q_move_pct
 q_move_pct # → # q_move_pct
@@ -148,8 +148,8 @@ $ q_chk_m_end 1 → q_return_n $ %
 q_mod_loop # → # q_check_rem
 q_check_rem 1 → 1 q_check_rem
 q_check_rem % → 1 q_verify
-***
-### Check Remainder
+---------------------------------------------
+Check Remainder
 1  q_verify _ → q_deny_clean 1 _
 $  q_verify _ → q_deny_clean $ _
 #  q_verify _ → q_deny_clean # _
@@ -202,8 +202,8 @@ $  q_sub_entry _ → q_do_sub $ _
 #  q_sub_entry _ → q_do_sub # _
 %  q_sub_entry _ → q_do_sub % _
 _  q_sub_entry _ → q_do_sub _ _
-***
-### Subtract & Check Size
+---------------------------------------------
+Subtract & Check Size
 1 q_do_sub 1 → q_chk_size 1 _
 _ q_do_sub 1 → q_chk_size _ _
 $ q_do_sub 1 → q_chk_size $ _
@@ -254,8 +254,8 @@ $ q_reset_loop # → q_reset_loop $ #
 # q_reset_loop # → q_reset_loop # #
 % q_reset_loop # → q_reset_loop % #
 q_reset_loop $ → $ q_mod_entry
-***
-### Cleanup Phase
+---------------------------------------------
+Cleanup Phase
 q_seek_sep 1 → 1 q_seek_sep
 q_seek_sep # → _ q_erase_m
 q_erase_m 1 → _ q_erase_m
