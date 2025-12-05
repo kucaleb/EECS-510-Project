@@ -14,21 +14,21 @@ $ q_reset_head 1 → q_reset_head $ 1
 # q_reset_head 1 → q_reset_head # 1
 % q_reset_head 1 → q_reset_head % 1
 q_reset_head _ → _ q_init_start
-1  q_check_1 _ → REJECT 1 _
-$  q_check_1 _ → REJECT $ _
-#  q_check_1 _ → REJECT # _
-%  q_check_1 _ → REJECT % _
-_  q_check_1 _ → REJECT _ _
+1  q_check_1 _ → HALT_REJECT 1 _
+$  q_check_1 _ → HALT_REJECT $ _
+#  q_check_1 _ → HALT_REJECT # _
+%  q_check_1 _ → HALT_REJECT % _
+_  q_check_1 _ → HALT_REJECT _ _
 1  q_check_2 _ → q_found_2 1 _
 $  q_check_2 _ → q_found_2 $ _
 #  q_check_2 _ → q_found_2 # _
 %  q_check_2 _ → q_found_2 % _
 _  q_check_2 _ → q_found_2 _ _
-1 q_found_2 1 → ACCEPT 1 1
-_ q_found_2 1 → ACCEPT _ 1
-$ q_found_2 1 → ACCEPT $ 1
-# q_found_2 1 → ACCEPT # 1
-% q_found_2 1 → ACCEPT % 1
+1 q_found_2 1 → HALT_ACCEPT 1 1
+_ q_found_2 1 → HALT_ACCEPT _ 1
+$ q_found_2 1 → HALT_ACCEPT $ 1
+# q_found_2 1 → HALT_ACCEPT # 1
+% q_found_2 1 → HALT_ACCEPT % 1
 ---------------------------------------------
 Setup Workspace
 q_init_start 1 → $ q_seek_end
@@ -270,7 +270,7 @@ _ q_done_reset 1 → q_done_reset _ 1
 $ q_done_reset 1 → q_done_reset $ 1
 # q_done_reset 1 → q_done_reset # 1
 % q_done_reset 1 → q_done_reset % 1
-q_done_reset _ → _ ACCEPT
+q_done_reset _ → _ HALT_ACCEPT
 1 q_wipe_left 1 → q_wipe_left 1 _
 _ q_wipe_left 1 → q_wipe_left _ _
 $ q_wipe_left 1 → q_wipe_left $ _
@@ -291,8 +291,8 @@ _ q_wipe_left % → q_wipe_left _ _
 $ q_wipe_left % → q_wipe_left $ _
 # q_wipe_left % → q_wipe_left # _
 % q_wipe_left % → q_wipe_left % _
-1  q_wipe_left _ → REJECT 1 _
-$  q_wipe_left _ → REJECT $ _
-#  q_wipe_left _ → REJECT # _
-%  q_wipe_left _ → REJECT % _
-_  q_wipe_left _ → REJECT _ _
+1  q_wipe_left _ → HALT_REJECT 1 _
+$  q_wipe_left _ → HALT_REJECT $ _
+#  q_wipe_left _ → HALT_REJECT # _
+%  q_wipe_left _ → HALT_REJECT % _
+_  q_wipe_left _ → HALT_REJECT _ _
