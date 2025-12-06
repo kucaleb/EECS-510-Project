@@ -1,4 +1,5 @@
-Sorry for not submitting the group, we are all submitting this repo separately.
+Prof Lohoefener,
+Hope you are having a good day whenever you are grading this. I would sincerely like to apologize for us not getting our info to you by the deadline of November 26th. Jake Crawford, Caleb Neil, and I were planning on collaborating for this project for a long time, but we miscommunicated who would submit the group information to you. When it came to submission time, we realized that nobody had submitted the group info and we already completed the entire project. We all submitted the same project individually and again we sincerely apologize for our mistake. 
 
 Authors: Jake Crawford, Caleb Neil, Lena Palmieri
 
